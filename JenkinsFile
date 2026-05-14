@@ -4,7 +4,6 @@ pipeline {
     environment {
         LIQUIBASE_HOME = '/var/jenkins_home/liquibase'
         DB_PASSWORD    = credentials('pg-password')
-        WORKSPACE_PATH = '/var/jenkins_home/workspace/liquibase-postgres'
     }
 
     stages {
@@ -13,7 +12,6 @@ pipeline {
             steps {
                 sh '''
                     if [ ! -f $LIQUIBASE_HOME/liquibase ]; then
-                        echo "Descargando Liquibase..."
                         curl -L https://github.com/liquibase/liquibase/releases/download/v5.0.2/liquibase-5.0.2.tar.gz -o /tmp/liquibase.tar.gz
                         mkdir -p $LIQUIBASE_HOME
                         tar -xzf /tmp/liquibase.tar.gz -C $LIQUIBASE_HOME
@@ -30,7 +28,6 @@ pipeline {
                 sh '''
                     if [ ! -f $LIQUIBASE_HOME/lib/postgresql-42.7.3.jar ]; then
                         curl -L https://jdbc.postgresql.org/download/postgresql-42.7.3.jar -o $LIQUIBASE_HOME/lib/postgresql-42.7.3.jar
-                        echo "Driver instalado"
                     else
                         echo "Driver ya existe"
                     fi
@@ -46,29 +43,13 @@ pipeline {
 
         stage('Liquibase Status') {
             steps {
-                sh '''
-                    $LIQUIBASE_HOME/liquibase \
-                        --url=jdbc:postgresql://gondola.proxy.rlwy.net:15118/railway \
-                        --username=postgres \
-                        --password=$DB_PASSWORD \
-                        --changeLogFile=changelog/db.changelog-master.xml \
-                        --searchPath=$WORKSPACE_PATH \
-                        status
-                '''
+                sh '$LIQUIBASE_HOME/liquibase --password=$DB_PASSWORD status'
             }
         }
 
         stage('Liquibase Update') {
             steps {
-                sh '''
-                    $LIQUIBASE_HOME/liquibase \
-                        --url=jdbc:postgresql://gondola.proxy.rlwy.net:15118/railway \
-                        --username=postgres \
-                        --password=$DB_PASSWORD \
-                        --changeLogFile=changelog/db.changelog-master.xml \
-                        --searchPath=$WORKSPACE_PATH \
-                        update
-                '''
+                sh '$LIQUIBASE_HOME/liquibase --password=$DB_PASSWORD update'
             }
         }
 
