@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: V1__create-users-table.sql
+      relativeToChangelogFile: true
+  - include:
+      file: V1__create-users-hand.sql
+      relativeToChangelogFile: true
